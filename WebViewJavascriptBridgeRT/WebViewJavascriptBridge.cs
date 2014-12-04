@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace WebViewJavascriptBridgeRT
@@ -95,43 +98,64 @@ namespace WebViewJavascriptBridgeRT
 			}
 		}
 
-		private void DispatchMessage(Dictionary<string, string> message)
+		private async void DispatchMessage(Dictionary<string, string> message)
 		{
+			var messageJSON = SerializedMessage(message);
+			if (!string.IsNullOrEmpty(messageJSON))
+			{
+				messageJSON = messageJSON.Replace("\\", "\\\\");
+				messageJSON = messageJSON.Replace("\"", "\\\"");
+				messageJSON = messageJSON.Replace("\'", "\\\'");
+				messageJSON = messageJSON.Replace("\n", "\\n");
+				messageJSON = messageJSON.Replace("\r", "\\r");
+				messageJSON = messageJSON.Replace("\f", "\\f");
+				messageJSON = messageJSON.Replace("\u2028", "\\u2028");
+				messageJSON = messageJSON.Replace("\u2029", "\\u2029");
 
+				var jsCommand = string.Format("WebViewJavascriptBridge._handleMessageFromNative('{0}');", messageJSON);
+				if (Window.Current.Dispatcher.HasThreadAccess)
+				{
+					await TryExecuteJsCommand(jsCommand, null);
+				}
+				else
+				{
+					Window.Current.Dispatcher.RunIdleAsync(async args =>
+					{
+						await TryExecuteJsCommand(jsCommand, null);
+					});
+				}
+			}
+		}
+
+		private async Task<object> TryExecuteJsCommand(string jsCommand, IEnumerable<string> arguments)
+		{
+			WebView webView;
+			_webViewReference.TryGetTarget(out webView);
+			if (webView != null)
+			{
+				return await webView.InvokeScriptAsync(jsCommand, arguments);
+			}
+			return null;
 		}
 
 		private string SerializedMessage(Dictionary<string, string> message)
 		{
-			return string.Empty;
+			using (var ms = new MemoryStream())
+			{
+				var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>));
+				serializer.WriteObject(ms, message);
+				var resultByte = ms.ToArray();
+				return Encoding.UTF8.GetString(resultByte, 0, resultByte.Length);
+			}
 		}
 
 		private Dictionary<string, string> DeserializeMessage(string message)
 		{
-			return null;
+			using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(message)))
+			{
+				var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>));
+				return (Dictionary<string, string>)serializer.ReadObject(ms);
+			}
 		}
-
-
-		//		- (void)_dispatchMessage:(WVJBMessage*)message {
-		//	NSString *messageJSON = [self _serializeMessage:message];
-		//	[self _log:@"SEND" json:messageJSON];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\'" withString:@"\\\'"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\r" withString:@"\\r"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\f" withString:@"\\f"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2028" withString:@"\\u2028"];
-		//	messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2029" withString:@"\\u2029"];
-
-		//	NSString* javascriptCommand = [NSString stringWithFormat:@"WebViewJavascriptBridge._handleMessageFromObjC('%@');", messageJSON];
-		//	if ([[NSThread currentThread] isMainThread]) {
-		//		[_webView stringByEvaluatingJavaScriptFromString:javascriptCommand];
-		//	} else {
-		//		__strong WVJB_WEBVIEW_TYPE* strongWebView = _webView;
-		//		dispatch_sync(dispatch_get_main_queue(), ^{
-		//			[strongWebView stringByEvaluatingJavaScriptFromString:javascriptCommand];
-		//		});
-		//	}
-		//}
 	}
 }
