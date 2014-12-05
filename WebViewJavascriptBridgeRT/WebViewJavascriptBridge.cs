@@ -31,38 +31,62 @@ namespace WebViewJavascriptBridgeRT
 			Setup(webView, handler);
 		}
 
-		public void Send(object message)
+		public void Send(string message)
 		{
 			this.Send(message, null);
 		}
 
-		public void Send(object message, WVJBResponseCallback responseCallback)
+		public void Send(string message, WVJBResponseCallback responseCallback)
 		{
+			SendData(message, responseCallback, null);
+		}
 
+		public void CallHandler(string handlerName)
+		{
+			CallHandler(handlerName, null);
+		}
+
+		public void CallHandler(string handlerName, string data)
+		{
+			CallHandler(handlerName, data, null);
+		}
+
+		public void CallHandler(string handlerName, string data, WVJBResponseCallback responseCallback)
+		{
+			SendData(data, responseCallback, handlerName);
 		}
 
 		public void RegisterHandlder(string handlerName, WVJBHandler handler)
 		{
-
+			_messageHandlers[handlerName] = handler;
 		}
 
-		public void callHandler(string handlerName)
+		public void Destroy()
 		{
+			WebView webView;
+			if (_webViewReference.TryGetTarget(out webView))
+			{
+				webView.NavigationStarting -= this.WebViewOnNavigationStarting;
+				webView.NavigationFailed -= this.WebViewOnNavigationFailed;
+				webView.NavigationCompleted -= this.WebViewOnNavigationCompleted;
+				webView.ScriptNotify -= this.WebViewOnScriptNotify;
+			}
 
-		}
+			_startupMessageQueue.Clear();
+			_startupMessageQueue = null;
+			_responseCallbacks.Clear();
+			_responseCallbacks = null;
 
-		public void callHandler(string handlerName, object data)
-		{
-
-		}
-
-		public void callHandler(string handlerName, object data, WVJBResponseCallback responseCallback)
-		{
-
+			_messageHandler = null;
+			_messageHandlers = null;
 		}
 
 		private void Setup(WebView webView, WVJBHandler handler)
 		{
+			_startupMessageQueue = new List<Dictionary<string, string>>();
+			_responseCallbacks = new Dictionary<string, WVJBResponseCallback>();
+			_uniqueId = 0;
+
 			webView.ScriptNotify += WebViewOnScriptNotify;
 			webView.NavigationStarting += WebViewOnNavigationStarting;
 			webView.NavigationFailed += WebViewOnNavigationFailed;
@@ -128,22 +152,22 @@ namespace WebViewJavascriptBridgeRT
 			var message = new Dictionary<string, string>();
 			if (data != null)
 			{
-				message.Add("data", data);
+				message["data"] = data;
 			}
 
 			if (responseCallback != null)
 			{
 				_uniqueId++;
 				string callbackId = "cb_" + _uniqueId;
-				_responseCallbacks.Add(callbackId, responseCallback);
-				message.Add("callbackId", callbackId);
+				_responseCallbacks[callbackId] = responseCallback;
+				message["callbackId"] = callbackId;
 			}
 
 			if (!string.IsNullOrEmpty(handlerName))
 			{
-				message.Add("handlerName", handlerName);
+				message["handlerName"] = handlerName;
 			}
-
+			QueueMessage(message);
 		}
 
 		private void QueueMessage(Dictionary<string, string> message)
