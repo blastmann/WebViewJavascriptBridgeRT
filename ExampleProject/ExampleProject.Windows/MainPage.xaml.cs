@@ -9,8 +9,6 @@ namespace ExampleProject
 	/// </summary>
 	public sealed partial class MainPage : Page
 	{
-		private WebViewJavascriptBridgeRT.WebViewJavascriptBridge _bridge;
-
 		public MainPage()
 		{
 			this.InitializeComponent();

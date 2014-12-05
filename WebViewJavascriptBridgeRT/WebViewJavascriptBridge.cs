@@ -66,7 +66,6 @@ namespace WebViewJavascriptBridgeRT
 			if (_webViewReference.TryGetTarget(out webView))
 			{
 				webView.NavigationStarting -= this.WebViewOnNavigationStarting;
-				webView.NavigationFailed -= this.WebViewOnNavigationFailed;
 				webView.NavigationCompleted -= this.WebViewOnNavigationCompleted;
 				webView.ScriptNotify -= this.WebViewOnScriptNotify;
 			}
@@ -88,7 +87,6 @@ namespace WebViewJavascriptBridgeRT
 
 			webView.ScriptNotify += WebViewOnScriptNotify;
 			webView.NavigationStarting += WebViewOnNavigationStarting;
-			webView.NavigationFailed += WebViewOnNavigationFailed;
 			webView.NavigationCompleted += WebViewOnNavigationCompleted;
 
 			_webViewReference = new WeakReference<WebView>(webView);
@@ -99,6 +97,8 @@ namespace WebViewJavascriptBridgeRT
 		private async void WebViewOnNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
 		{
 			_numRequestsLoading--;
+			if (!args.IsSuccess)
+				return;
 
 			if (_numRequestsLoading == 0)
 			{
@@ -128,11 +128,6 @@ namespace WebViewJavascriptBridgeRT
 					DispatchMessage(message);
 				}
 			}
-		}
-
-		private void WebViewOnNavigationFailed(object sender, WebViewNavigationFailedEventArgs webViewNavigationFailedEventArgs)
-		{
-			_numRequestsLoading--;
 		}
 
 		private void WebViewOnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
@@ -272,7 +267,7 @@ namespace WebViewJavascriptBridgeRT
 			}
 		}
 
-		private async void DispatchMessage(Dictionary<string, string> message)
+		private void DispatchMessage(Dictionary<string, string> message)
 		{
 			var messageJSON = JsonConvert.SerializeObject(message);
 			if (!string.IsNullOrEmpty(messageJSON))
@@ -289,19 +284,16 @@ namespace WebViewJavascriptBridgeRT
 				var jsCommand = string.Format("WebViewJavascriptBridge._handleMessageFromNative('{0}');", messageJSON);
 				if (Window.Current.Dispatcher.HasThreadAccess)
 				{
-					await TryExecuteJsCommand(jsCommand);
+					TryExecuteJsCommand(jsCommand);
 				}
 				else
 				{
-					Window.Current.Dispatcher.RunIdleAsync(async args =>
-					{
-						await TryExecuteJsCommand(jsCommand);
-					});
+					Window.Current.Dispatcher.RunIdleAsync(args => TryExecuteJsCommand(jsCommand));
 				}
 			}
 		}
 
-		private async Task<object> TryExecuteJsCommand(string jsCommand)
+		private void TryExecuteJsCommand(string jsCommand)
 		{
 			try
 			{
@@ -309,7 +301,7 @@ namespace WebViewJavascriptBridgeRT
 				_webViewReference.TryGetTarget(out webView);
 				if (webView != null)
 				{
-					return await webView.InvokeScriptAsync("eval", new[] { jsCommand });
+					webView.InvokeScriptAsync("eval", new[] { jsCommand });
 				}
 			}
 			catch (Exception exception)
@@ -317,7 +309,6 @@ namespace WebViewJavascriptBridgeRT
 				Debug.WriteLine(jsCommand);
 				Debug.WriteLine(exception.Message);
 			}
-			return null;
 		}
 	}
 }

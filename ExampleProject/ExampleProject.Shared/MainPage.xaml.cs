@@ -7,6 +7,7 @@ namespace ExampleProject
 {
 	public partial class MainPage
 	{
+		private WebViewJavascriptBridgeRT.WebViewJavascriptBridge _bridge;
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
@@ -32,7 +33,7 @@ namespace ExampleProject
 
 			TestWebView.Navigate(new Uri("ms-appx-web:///ExampleApp.html"));
 
-			TestWebView.LoadCompleted += (sender, args) =>
+			TestWebView.NavigationCompleted += (sender, args) =>
 				_bridge.Send(@"A string sent from C# after Webview has loaded.");
 		}
 
