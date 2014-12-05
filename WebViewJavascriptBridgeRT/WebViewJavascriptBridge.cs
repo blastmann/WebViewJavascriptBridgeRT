@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Newtonsoft.Json;
 
 namespace WebViewJavascriptBridgeRT
 {
@@ -94,16 +93,29 @@ namespace WebViewJavascriptBridgeRT
 
 			_webViewReference = new WeakReference<WebView>(webView);
 			_messageHandler = handler;
+			_messageHandlers = new Dictionary<string, WVJBHandler>();
 		}
 
 		private async void WebViewOnNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
 		{
 			_numRequestsLoading--;
 
-			if (_numRequestsLoading == 0 && await sender.InvokeScriptAsync("eval", new[] { @"typof WebViewJavascriptBridge == 'object'" }) == "true")
+			if (_numRequestsLoading == 0)
 			{
-				// todo: load js from file
-				await sender.InvokeScriptAsync("eval", new[] { "" });
+				var result = await sender.InvokeScriptAsync("eval", new[] { @"typeof WebViewJavascriptBridge == 'object'" });
+				if (result == "true")
+					return;
+
+				var folder = await Package.Current.InstalledLocation.GetFolderAsync("WebViewJavascriptBridgeRT");
+				if (folder == null)
+					return;
+
+				var file = await folder.GetFileAsync("WebViewJavascriptBridge.js");
+				if (file == null)
+					return;
+
+				var js = await FileIO.ReadTextAsync(file);
+				await sender.InvokeScriptAsync("eval", new[] { js });
 			}
 
 			var startupMessageQueue = _startupMessageQueue;
@@ -134,16 +146,16 @@ namespace WebViewJavascriptBridgeRT
 			if (string.IsNullOrEmpty(notifyMessage))
 				return;
 
-			var url = new Uri(notifyMessage);
-			if (url.Scheme != KCustomProtocolScheme) return;
+			if (!notifyMessage.StartsWith(KCustomProtocolScheme, StringComparison.Ordinal))
+				return;
 
-			if (url.Host == KQueueHasMessage)
+			if (notifyMessage.EndsWith(KQueueHasMessage, StringComparison.Ordinal))
 			{
 				FlushMessage();
 			}
 			else
 			{
-				Debug.WriteLine("WebViewJavascriptBridge: WARNING: Received unknown WebViewJavascriptBridge command {0}://{1}", KCustomProtocolScheme, url.PathAndQuery);
+				Debug.WriteLine("WebViewJavascriptBridge: WARNING: Received unknown WebViewJavascriptBridge command: " + notifyMessage);
 			}
 		}
 
@@ -188,11 +200,11 @@ namespace WebViewJavascriptBridgeRT
 			if (!_webViewReference.TryGetTarget(out webView))
 				return;
 
-			var messageQueueString = await webView.InvokeScriptAsync("WebViewJavascriptBridge._fetchQueue();", null);
+			var messageQueueString = await webView.InvokeScriptAsync("eval", new[] { "WebViewJavascriptBridge._fetchQueue();" });
 			if (string.IsNullOrEmpty(messageQueueString))
 				return;
 
-			var messages = DeserializeMessage(messageQueueString);
+			var messages = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(messageQueueString);
 			if (messages == null)
 			{
 				Debug.WriteLine("WebViewJavascriptBridge: WARNING: Invalid received");
@@ -262,7 +274,7 @@ namespace WebViewJavascriptBridgeRT
 
 		private async void DispatchMessage(Dictionary<string, string> message)
 		{
-			var messageJSON = SerializedMessage(message);
+			var messageJSON = JsonConvert.SerializeObject(message);
 			if (!string.IsNullOrEmpty(messageJSON))
 			{
 				messageJSON = messageJSON.Replace("\\", "\\\\");
@@ -277,47 +289,35 @@ namespace WebViewJavascriptBridgeRT
 				var jsCommand = string.Format("WebViewJavascriptBridge._handleMessageFromNative('{0}');", messageJSON);
 				if (Window.Current.Dispatcher.HasThreadAccess)
 				{
-					await TryExecuteJsCommand(jsCommand, null);
+					await TryExecuteJsCommand(jsCommand);
 				}
 				else
 				{
 					Window.Current.Dispatcher.RunIdleAsync(async args =>
 					{
-						await TryExecuteJsCommand(jsCommand, null);
+						await TryExecuteJsCommand(jsCommand);
 					});
 				}
 			}
 		}
 
-		private async Task<object> TryExecuteJsCommand(string jsCommand, IEnumerable<string> arguments)
+		private async Task<object> TryExecuteJsCommand(string jsCommand)
 		{
-			WebView webView;
-			_webViewReference.TryGetTarget(out webView);
-			if (webView != null)
+			try
 			{
-				return await webView.InvokeScriptAsync(jsCommand, arguments);
+				WebView webView;
+				_webViewReference.TryGetTarget(out webView);
+				if (webView != null)
+				{
+					return await webView.InvokeScriptAsync("eval", new[] { jsCommand });
+				}
+			}
+			catch (Exception exception)
+			{
+				Debug.WriteLine(jsCommand);
+				Debug.WriteLine(exception.Message);
 			}
 			return null;
-		}
-
-		private string SerializedMessage(Dictionary<string, string> message)
-		{
-			using (var ms = new MemoryStream())
-			{
-				var serializer = new DataContractJsonSerializer(typeof(Dictionary<string, string>));
-				serializer.WriteObject(ms, message);
-				var resultByte = ms.ToArray();
-				return Encoding.UTF8.GetString(resultByte, 0, resultByte.Length);
-			}
-		}
-
-		private IEnumerable<Dictionary<string, string>> DeserializeMessage(string message)
-		{
-			using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(message)))
-			{
-				var serializer = new DataContractJsonSerializer(typeof(IEnumerable<Dictionary<string, string>>));
-				return serializer.ReadObject(ms) as IEnumerable<Dictionary<string, string>>;
-			}
 		}
 	}
 }

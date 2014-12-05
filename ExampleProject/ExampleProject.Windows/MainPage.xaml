@@ -7,7 +7,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    </Grid>
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="350" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<StackPanel Margin="24">
+			<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 12">
+				<Button Click="SendMessage">SendMessage</Button>
+				<Button Click="CallHandler">CallHandler</Button>
+			</StackPanel>
+			<TextBlock Text="Output:" FontSize="24" TextWrapping="WrapWholeWords" />
+			<ScrollViewer Height="400">
+				<TextBlock Name="OutputTextBlock" FontSize="{StaticResource ControlContentThemeFontSize}" TextWrapping="WrapWholeWords" />
+			</ScrollViewer>
+		</StackPanel>
+		<WebView Grid.Column="1" Name="TestWebView" />
+	</Grid>
 </Page>
