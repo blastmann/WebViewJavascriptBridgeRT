@@ -7,14 +7,14 @@ namespace ExampleProject
 {
 	public partial class MainPage
 	{
-		private WebViewJavascriptBridgeRT.WebViewJavascriptBridge _bridge;
+		private WebViewJavascriptBridge _bridge;
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
 
 			_bridge = new WebViewJavascriptBridge(TestWebView, (data, callback) =>
 			{
-				OutputTextBlock.Text += @"Receive message from JS: " + data + "\n";
+				OutputTextBlock.Text = @"Receive message from JS: " + data + "\n" + OutputTextBlock.Text;
 				callback(@"Response for message from C#");
 			});
 

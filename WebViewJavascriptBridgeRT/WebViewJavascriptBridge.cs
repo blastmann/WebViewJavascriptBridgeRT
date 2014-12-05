@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -18,10 +19,27 @@ namespace WebViewJavascriptBridgeRT
 		private const string KQueueHasMessage = "__WVJB_QUEUE_MESSAGE__";
 
 		private WeakReference<WebView> _webViewReference;
+
+		/// <summary>
+		/// Current message handler
+		/// </summary>
 		private WVJBHandler _messageHandler;
+
+		/// <summary>
+		/// MessageQueue in native codes
+		/// </summary>
 		private List<Dictionary<string, string>> _startupMessageQueue;
+
+		/// <summary>
+		/// Callbacks
+		/// </summary>
 		private Dictionary<string, WVJBResponseCallback> _responseCallbacks;
+
+		/// <summary>
+		/// Message Handlers from outside
+		/// </summary>
 		private Dictionary<string, WVJBHandler> _messageHandlers;
+
 		private long _uniqueId;
 		private ulong _numRequestsLoading;
 
@@ -30,36 +48,68 @@ namespace WebViewJavascriptBridgeRT
 			Setup(webView, handler);
 		}
 
+		/// <summary>
+		/// Send message to JS
+		/// </summary>
+		/// <param name="message"></param>
 		public void Send(string message)
 		{
 			this.Send(message, null);
 		}
 
+		/// <summary>
+		/// Send message to JS with native callback
+		/// </summary>
+		/// <param name="message"></param>
+		/// <param name="responseCallback"></param>
 		public void Send(string message, WVJBResponseCallback responseCallback)
 		{
 			SendData(message, responseCallback, null);
 		}
 
+		/// <summary>
+		/// Call handler registered in native code.
+		/// </summary>
+		/// <param name="handlerName"></param>
 		public void CallHandler(string handlerName)
 		{
 			CallHandler(handlerName, null);
 		}
 
+		/// <summary>
+		/// Call handler with stringify data
+		/// </summary>
+		/// <param name="handlerName"></param>
+		/// <param name="data"></param>
 		public void CallHandler(string handlerName, string data)
 		{
 			CallHandler(handlerName, data, null);
 		}
 
+		/// <summary>
+		/// Call handler with data and response callback
+		/// </summary>
+		/// <param name="handlerName"></param>
+		/// <param name="data"></param>
+		/// <param name="responseCallback"></param>
 		public void CallHandler(string handlerName, string data, WVJBResponseCallback responseCallback)
 		{
 			SendData(data, responseCallback, handlerName);
 		}
 
+		/// <summary>
+		/// Register a js handler
+		/// </summary>
+		/// <param name="handlerName"></param>
+		/// <param name="handler"></param>
 		public void RegisterHandlder(string handlerName, WVJBHandler handler)
 		{
 			_messageHandlers[handlerName] = handler;
 		}
 
+		/// <summary>
+		/// Detroy this bridge when it become unused
+		/// </summary>
 		public void Destroy()
 		{
 			WebView webView;
@@ -102,7 +152,7 @@ namespace WebViewJavascriptBridgeRT
 
 			if (_numRequestsLoading == 0)
 			{
-				var result = await sender.InvokeScriptAsync("eval", new[] { @"typeof WebViewJavascriptBridge == 'object'" });
+				var result = await sender.EvalScriptFromString("typeof WebViewJavascriptBridge == 'object'");
 				if (result == "true")
 					return;
 
@@ -115,7 +165,7 @@ namespace WebViewJavascriptBridgeRT
 					return;
 
 				var js = await FileIO.ReadTextAsync(file);
-				await sender.InvokeScriptAsync("eval", new[] { js });
+				await sender.EvalScriptFromString(js);
 			}
 
 			var startupMessageQueue = _startupMessageQueue;
@@ -192,13 +242,17 @@ namespace WebViewJavascriptBridgeRT
 		private async void FlushMessage()
 		{
 			WebView webView;
-			if (!_webViewReference.TryGetTarget(out webView))
+			_webViewReference.TryGetTarget(out webView);
+			if (webView == null)
 				return;
 
-			var messageQueueString = await webView.InvokeScriptAsync("eval", new[] { "WebViewJavascriptBridge._fetchQueue();" });
+			var messageQueueString = await webView.EvalScriptFromString("WebViewJavascriptBridge._fetchQueue();");
 			if (string.IsNullOrEmpty(messageQueueString))
 				return;
 
+			// Here is a little bit different from ObjC, because my messqueue is generic restricted. 
+			// It's better not use 'dynamic' for runtime decoding, 'dynamic' is slow.
+			// So, be careful. You should stringify your data before notifying.
 			var messages = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(messageQueueString);
 			if (messages == null)
 			{
@@ -301,7 +355,7 @@ namespace WebViewJavascriptBridgeRT
 				_webViewReference.TryGetTarget(out webView);
 				if (webView != null)
 				{
-					webView.InvokeScriptAsync("eval", new[] { jsCommand });
+					webView.EvalScriptFromString(jsCommand);
 				}
 			}
 			catch (Exception exception)
@@ -309,6 +363,14 @@ namespace WebViewJavascriptBridgeRT
 				Debug.WriteLine(jsCommand);
 				Debug.WriteLine(exception.Message);
 			}
+		}
+	}
+
+	public static class WebViewExtensions
+	{
+		public static IAsyncOperation<string> EvalScriptFromString(this WebView webView, string script)
+		{
+			return webView.InvokeScriptAsync("eval", new[] { script });
 		}
 	}
 }
