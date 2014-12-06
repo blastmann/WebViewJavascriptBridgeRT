@@ -35,8 +35,7 @@ namespace ExampleProject
 
 			TestWebView.Navigate(new Uri("ms-appx-web:///ExampleApp.html"));
 
-			TestWebView.NavigationCompleted += (sender, args) =>
-				_bridge.Send(@"A string sent from C# after Webview has loaded.");
+			_bridge.Send(@"A string sent from C# after Webview has loaded.");
 		}
 
 		private void SendMessage(object sender, RoutedEventArgs e)
