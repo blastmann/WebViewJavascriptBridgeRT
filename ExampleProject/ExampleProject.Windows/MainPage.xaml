@@ -12,16 +12,24 @@
 			<ColumnDefinition Width="350" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<StackPanel Margin="24">
+		<Grid Margin="24">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
 			<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 12">
 				<Button Click="SendMessage">SendMessage</Button>
 				<Button Click="CallHandler">CallHandler</Button>
 			</StackPanel>
-			<TextBlock Text="Output:" FontSize="24" TextWrapping="WrapWholeWords" />
-			<ScrollViewer Height="400">
-				<TextBlock Name="OutputTextBlock" FontSize="{StaticResource ControlContentThemeFontSize}" TextWrapping="WrapWholeWords" />
-			</ScrollViewer>
-		</StackPanel>
+			<TextBlock Grid.Row="1" Text="Output:" FontSize="24" TextWrapping="WrapWholeWords" />
+			<ListBox Name="OutputBox" Grid.Row="1" Margin="12,36,12,0" Background="Transparent">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding}" FontSize="18" TextWrapping="Wrap" />
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Grid>
 		<WebView Grid.Column="1" Name="TestWebView" />
 	</Grid>
 </Page>

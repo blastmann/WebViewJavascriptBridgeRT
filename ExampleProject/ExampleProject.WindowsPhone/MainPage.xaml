@@ -8,21 +8,26 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*" />
-			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="2*" />
 		</Grid.RowDefinitions>
-		<StackPanel Margin="24">
+		<StackPanel Margin="12">
 			<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 12">
 				<Button Click="SendMessage">SendMessage</Button>
 				<Button Click="CallHandler">CallHandler</Button>
 			</StackPanel>
 			<TextBlock Text="Output:" FontSize="24" TextWrapping="WrapWholeWords" />
-			<ScrollViewer Height="400">
-				<TextBlock Name="OutputTextBlock" FontSize="{StaticResource ControlContentThemeFontSize}" TextWrapping="WrapWholeWords" />
-			</ScrollViewer>
 		</StackPanel>
-		<WebView Grid.Row="1" Name="TestWebView" />
-    </Grid>
+		<ListBox Name="OutputBox" Grid.Row="1" Margin="12,0" Background="Transparent">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="18" />
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		<WebView Grid.Row="2" Name="TestWebView" />
+	</Grid>
 </Page>

@@ -152,7 +152,7 @@ namespace WebViewJavascriptBridgeRT
 
 			if (_numRequestsLoading == 0)
 			{
-				var result = await sender.EvalScriptFromString("typeof WebViewJavascriptBridge == 'object'");
+				var result = await sender.EvalScript("typeof WebViewJavascriptBridge == 'object'");
 				if (result == "true")
 					return;
 
@@ -165,7 +165,7 @@ namespace WebViewJavascriptBridgeRT
 					return;
 
 				var js = await FileIO.ReadTextAsync(file);
-				await sender.EvalScriptFromString(js);
+				await sender.EvalScript(js);
 			}
 
 			var startupMessageQueue = _startupMessageQueue;
@@ -246,7 +246,7 @@ namespace WebViewJavascriptBridgeRT
 			if (webView == null)
 				return;
 
-			var messageQueueString = await webView.EvalScriptFromString("WebViewJavascriptBridge._fetchQueue();");
+			var messageQueueString = await webView.EvalScript("WebViewJavascriptBridge._fetchQueue();");
 			if (string.IsNullOrEmpty(messageQueueString))
 				return;
 
@@ -355,7 +355,7 @@ namespace WebViewJavascriptBridgeRT
 				_webViewReference.TryGetTarget(out webView);
 				if (webView != null)
 				{
-					webView.EvalScriptFromString(jsCommand);
+					webView.EvalScript(jsCommand);
 				}
 			}
 			catch (Exception exception)
@@ -368,7 +368,7 @@ namespace WebViewJavascriptBridgeRT
 
 	public static class WebViewExtensions
 	{
-		public static IAsyncOperation<string> EvalScriptFromString(this WebView webView, string script)
+		public static IAsyncOperation<string> EvalScript(this WebView webView, string script)
 		{
 			return webView.InvokeScriptAsync("eval", new[] { script });
 		}
