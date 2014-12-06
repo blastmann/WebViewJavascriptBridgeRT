@@ -194,7 +194,7 @@ namespace WebViewJavascriptBridgeRT
 			if (!notifyMessage.StartsWith(KCustomProtocolScheme, StringComparison.Ordinal))
 				return;
 
-			if (notifyMessage.EndsWith(KQueueHasMessage, StringComparison.Ordinal))
+			if (notifyMessage.IndexOf(KQueueHasMessage, StringComparison.Ordinal) >= 0)
 			{
 				FlushMessage();
 			}
