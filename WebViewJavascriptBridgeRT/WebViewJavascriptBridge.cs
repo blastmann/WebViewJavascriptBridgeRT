@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Data.Json;
@@ -109,26 +110,6 @@ namespace WebViewJavascriptBridgeRT
 			_messageHandlers[handlerName] = handler;
 		}
 
-		/// <summary>
-		/// Detroy this bridge when it become unused
-		/// </summary>
-		public void Destroy()
-		{
-			WebView webView;
-			if (_webViewReference.TryGetTarget(out webView))
-			{
-				webView.NavigationStarting -= this.WebViewOnNavigationStarting;
-				webView.NavigationCompleted -= this.WebViewOnNavigationCompleted;
-				webView.ScriptNotify -= this.WebViewOnScriptNotify;
-			}
-
-			_startupMessageQueue = null;
-			_responseCallbacks = null;
-
-			_messageHandler = null;
-			_messageHandlers = null;
-		}
-
 		private void Setup(WebView webView, WVJBHandler handler)
 		{
 			_startupMessageQueue = new List<BridgeMessage>();
@@ -136,13 +117,13 @@ namespace WebViewJavascriptBridgeRT
 			_responseCallbacks = new Dictionary<string, WVJBResponseCallback>();
 			_uniqueId = 0;
 
-			webView.ScriptNotify += WebViewOnScriptNotify;
-			webView.NavigationStarting += WebViewOnNavigationStarting;
-			webView.NavigationCompleted += WebViewOnNavigationCompleted;
-
 			_webViewReference = new WeakReference<WebView>(webView);
 			_messageHandler = handler;
 			_messageHandlers = new Dictionary<string, WVJBHandler>();
+
+			WeakEventManager.AddHandler(webView, "ScriptNotify", this.WebViewOnScriptNotify);
+			WeakEventManager.AddHandler<WebView, WebViewNavigationStartingEventArgs>(webView, "NavigationStarting", this.WebViewOnNavigationStarting);
+			WeakEventManager.AddHandler<WebView, WebViewNavigationCompletedEventArgs>(webView, "NavigationCompleted", this.WebViewOnNavigationCompleted);
 		}
 
 		private async void WebViewOnNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
@@ -172,12 +153,11 @@ namespace WebViewJavascriptBridgeRT
 			var startupMessageQueue = _startupMessageQueue;
 			_startupMessageQueue = null;
 
-			if (startupMessageQueue != null)
+			if (startupMessageQueue == null) return;
+
+			foreach (var message in startupMessageQueue)
 			{
-				foreach (var message in startupMessageQueue)
-				{
-					DispatchMessage(message);
-				}
+				DispatchMessage(message);
 			}
 		}
 
@@ -223,7 +203,7 @@ namespace WebViewJavascriptBridgeRT
 
 			if (!string.IsNullOrEmpty(handlerName))
 			{
-				message.HanderName = handlerName;
+				message.HandlerName = handlerName;
 			}
 
 			QueueMessage(message);
@@ -361,7 +341,7 @@ namespace WebViewJavascriptBridgeRT
 
 		internal class BridgeMessage
 		{
-			internal string HanderName { get; set; }
+			internal string HandlerName { get; set; }
 			internal object Data { get; set; }
 			internal string CallbackId { get; set; }
 			internal string ResponseId { get; set; }

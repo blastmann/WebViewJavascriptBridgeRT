@@ -23,7 +23,7 @@ namespace ExampleProject
 				callback(@"Response for message from C#");
 			});
 
-			_bridge.RegisterHandlder(@"testCSharpCallback", delegate(string data, WVJBResponseCallback callback)
+			_bridge.RegisterHandlder(@"testCSharpCallback", (data, callback) =>
 			{
 				_outputResults.Insert(0, @"Receive message from JS: " + data);
 				callback(@"Response from testCSharpCallback");
@@ -54,7 +54,7 @@ namespace ExampleProject
 				Any = 1,
 			};
 			_bridge.CallHandler(@"testJavascriptHandler", json,
-				s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s), true);
+				s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));
 		}
 	}
 }
