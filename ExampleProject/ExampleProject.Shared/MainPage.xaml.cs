@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Windows.Data.Json;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 using WebViewJavascriptBridgeRT;
@@ -47,6 +48,13 @@ namespace ExampleProject
 		{
 			string data = @"{ 'greetingFromC#': 'Hi there, JS!' }";
 			_bridge.CallHandler(@"testJavascriptHandler", data, s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));
+
+			var json = new
+			{
+				Any = 1,
+			};
+			_bridge.CallHandler(@"testJavascriptHandler", json,
+				s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s), true);
 		}
 	}
 }

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleProject.Windows", "E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleProject.WindowsPhone", "ExampleProject\ExampleProject.WindowsPhone\ExampleProject.WindowsPhone.csproj", "{4627E984-2F15-4A7A-AC4C-F4DA9D4A6C89}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebViewJavascriptBridge", "WebViewJavascriptBridge\WebViewJavascriptBridge.csproj", "{81D8ED08-8428-41E7-8413-76DF1FBF8853}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ExampleProject\ExampleProject.Shared\ExampleProject.Shared.projitems*{e400f3ae-fc42-4e1d-a290-8e73330df639}*SharedItemsImports = 13
@@ -86,6 +88,16 @@ Global
 		{4627E984-2F15-4A7A-AC4C-F4DA9D4A6C89}.Release|x86.ActiveCfg = Release|x86
 		{4627E984-2F15-4A7A-AC4C-F4DA9D4A6C89}.Release|x86.Build.0 = Release|x86
 		{4627E984-2F15-4A7A-AC4C-F4DA9D4A6C89}.Release|x86.Deploy.0 = Release|x86
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Release|ARM.ActiveCfg = Release|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Release|x64.ActiveCfg = Release|Any CPU
+		{81D8ED08-8428-41E7-8413-76DF1FBF8853}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

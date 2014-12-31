@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Data.Json;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
@@ -13,6 +14,7 @@ namespace WebViewJavascriptBridgeRT
 {
 	public delegate void WVJBResponseCallback(string data);
 	public delegate void WVJBHandler(string data, WVJBResponseCallback responseCallback);
+
 	public sealed class WebViewJavascriptBridge
 	{
 		private const string KCustomProtocolScheme = "wvjbscheme";
@@ -28,7 +30,7 @@ namespace WebViewJavascriptBridgeRT
 		/// <summary>
 		/// MessageQueue in native codes
 		/// </summary>
-		private List<Dictionary<string, string>> _startupMessageQueue;
+		private List<BridgeMessage> _startupMessageQueue;
 
 		/// <summary>
 		/// Callbacks
@@ -92,7 +94,7 @@ namespace WebViewJavascriptBridgeRT
 		/// <param name="handlerName"></param>
 		/// <param name="data"></param>
 		/// <param name="responseCallback"></param>
-		public void CallHandler(string handlerName, string data, WVJBResponseCallback responseCallback)
+		public void CallHandler(string handlerName, object data, WVJBResponseCallback responseCallback)
 		{
 			SendData(data, responseCallback, handlerName);
 		}
@@ -120,9 +122,7 @@ namespace WebViewJavascriptBridgeRT
 				webView.ScriptNotify -= this.WebViewOnScriptNotify;
 			}
 
-			_startupMessageQueue.Clear();
 			_startupMessageQueue = null;
-			_responseCallbacks.Clear();
 			_responseCallbacks = null;
 
 			_messageHandler = null;
@@ -131,7 +131,8 @@ namespace WebViewJavascriptBridgeRT
 
 		private void Setup(WebView webView, WVJBHandler handler)
 		{
-			_startupMessageQueue = new List<Dictionary<string, string>>();
+			_startupMessageQueue = new List<BridgeMessage>();
+
 			_responseCallbacks = new Dictionary<string, WVJBResponseCallback>();
 			_uniqueId = 0;
 
@@ -204,12 +205,12 @@ namespace WebViewJavascriptBridgeRT
 			}
 		}
 
-		private void SendData(string data, WVJBResponseCallback responseCallback, string handlerName)
+		private void SendData(object data, WVJBResponseCallback responseCallback, string handlerName)
 		{
-			var message = new Dictionary<string, string>();
+			var message = new BridgeMessage();
 			if (data != null)
 			{
-				message["data"] = data;
+				message.Data = data;
 			}
 
 			if (responseCallback != null)
@@ -217,17 +218,18 @@ namespace WebViewJavascriptBridgeRT
 				_uniqueId++;
 				string callbackId = "cb_" + _uniqueId;
 				_responseCallbacks[callbackId] = responseCallback;
-				message["callbackId"] = callbackId;
+				message.CallbackId = callbackId;
 			}
 
 			if (!string.IsNullOrEmpty(handlerName))
 			{
-				message["handlerName"] = handlerName;
+				message.HanderName = handlerName;
 			}
+
 			QueueMessage(message);
 		}
 
-		private void QueueMessage(Dictionary<string, string> message)
+		private void QueueMessage(BridgeMessage message)
 		{
 			if (_startupMessageQueue != null)
 			{
@@ -250,9 +252,6 @@ namespace WebViewJavascriptBridgeRT
 			if (string.IsNullOrEmpty(messageQueueString))
 				return;
 
-			// Here is a little bit different from ObjC, because my messqueue is generic restricted. 
-			// It's better not use 'dynamic' for runtime decoding, 'dynamic' is slow.
-			// So, be careful. You should stringify your data before notifying.
 			var messages = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(messageQueueString);
 			if (messages == null)
 			{
@@ -285,12 +284,7 @@ namespace WebViewJavascriptBridgeRT
 								responseData = string.Empty;
 							}
 
-							var msg = new Dictionary<string, string>
-							{
-								{"responseId", callbackId},
-								{"responseData", responseData}
-							};
-							QueueMessage(msg);
+							QueueMessage(new BridgeMessage { ResponseId = callbackId, ResponseData = responseData });
 						};
 					}
 					else
@@ -321,7 +315,7 @@ namespace WebViewJavascriptBridgeRT
 			}
 		}
 
-		private void DispatchMessage(Dictionary<string, string> message)
+		private void DispatchMessage(BridgeMessage message)
 		{
 			var messageJSON = JsonConvert.SerializeObject(message);
 			if (!string.IsNullOrEmpty(messageJSON))
@@ -363,6 +357,15 @@ namespace WebViewJavascriptBridgeRT
 				Debug.WriteLine(jsCommand);
 				Debug.WriteLine(exception.Message);
 			}
+		}
+
+		internal class BridgeMessage
+		{
+			internal string HanderName { get; set; }
+			internal object Data { get; set; }
+			internal string CallbackId { get; set; }
+			internal string ResponseId { get; set; }
+			internal string ResponseData { get; set; }
 		}
 	}
 
