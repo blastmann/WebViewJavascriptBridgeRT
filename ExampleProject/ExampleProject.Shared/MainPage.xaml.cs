@@ -46,12 +46,9 @@ namespace ExampleProject
 
 		private void CallHandler(object sender, RoutedEventArgs e)
 		{
-			string data = @"{ 'greetingFromC#': 'Hi there, JS!' }";
-			_bridge.CallHandler(@"testJavascriptHandler", data, s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));
-
 			var json = new
 			{
-				Any = 1,
+				greetingFromCSharp = "Hi there, JS!"
 			};
 			_bridge.CallHandler(@"testJavascriptHandler", json,
 				s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));

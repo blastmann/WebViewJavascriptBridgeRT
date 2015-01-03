@@ -190,7 +190,7 @@ namespace WebViewJavascriptBridgeRT
 			var message = new BridgeMessage();
 			if (data != null)
 			{
-				message.Data = data;
+				message.data = data;
 			}
 
 			if (responseCallback != null)
@@ -198,12 +198,12 @@ namespace WebViewJavascriptBridgeRT
 				_uniqueId++;
 				string callbackId = "cb_" + _uniqueId;
 				_responseCallbacks[callbackId] = responseCallback;
-				message.CallbackId = callbackId;
+				message.callbackId = callbackId;
 			}
 
 			if (!string.IsNullOrEmpty(handlerName))
 			{
-				message.HandlerName = handlerName;
+				message.handlerName = handlerName;
 			}
 
 			QueueMessage(message);
@@ -264,7 +264,7 @@ namespace WebViewJavascriptBridgeRT
 								responseData = string.Empty;
 							}
 
-							QueueMessage(new BridgeMessage { ResponseId = callbackId, ResponseData = responseData });
+							QueueMessage(new BridgeMessage { responseId = callbackId, responseData = responseData });
 						};
 					}
 					else
@@ -297,18 +297,9 @@ namespace WebViewJavascriptBridgeRT
 
 		private void DispatchMessage(BridgeMessage message)
 		{
-			var messageJSON = JsonConvert.SerializeObject(message);
+			var messageJSON = JsonConvert.SerializeObject(message, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			if (!string.IsNullOrEmpty(messageJSON))
 			{
-				messageJSON = messageJSON.Replace("\\", "\\\\");
-				messageJSON = messageJSON.Replace("\"", "\\\"");
-				messageJSON = messageJSON.Replace("\'", "\\\'");
-				messageJSON = messageJSON.Replace("\n", "\\n");
-				messageJSON = messageJSON.Replace("\r", "\\r");
-				messageJSON = messageJSON.Replace("\f", "\\f");
-				messageJSON = messageJSON.Replace("\u2028", "\\u2028");
-				messageJSON = messageJSON.Replace("\u2029", "\\u2029");
-
 				var jsCommand = string.Format("WebViewJavascriptBridge._handleMessageFromNative('{0}');", messageJSON);
 				if (Window.Current.Dispatcher.HasThreadAccess)
 				{
@@ -338,15 +329,18 @@ namespace WebViewJavascriptBridgeRT
 				Debug.WriteLine(exception.Message);
 			}
 		}
+	}
 
-		internal class BridgeMessage
-		{
-			internal string HandlerName { get; set; }
-			internal object Data { get; set; }
-			internal string CallbackId { get; set; }
-			internal string ResponseId { get; set; }
-			internal string ResponseData { get; set; }
-		}
+	/// <summary>
+	/// BridgeMessage Class for passing message to WebView
+	/// </summary>
+	public class BridgeMessage
+	{
+		public string handlerName { get; set; }
+		public object data { get; set; }
+		public string callbackId { get; set; }
+		public string responseId { get; set; }
+		public string responseData { get; set; }
 	}
 
 	public static class WebViewExtensions
