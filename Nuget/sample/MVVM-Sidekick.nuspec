@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MVVM-Sidekick</id>
+    <version>1.1.1</version>
+    <title>MVVM Sidekick Light-weight Framework</title>
+    <authors>Wayne Wang</authors>
+    <owners>Wayne Wang</owners>
+    <projectUrl>https://github.com/waynebaby/MVVM-Sidekick</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      MVVM-Sidekick https://github.com/waynebaby/MVVM-Sidekick/
+      =============
+      MVVM密友 https://github.com/waynebaby/MVVM-Sidekick/
+      ===================
+
+
+      A Modern light-weight MVVM framework based on RX and TPL await
+
+      轻量级MVVM框架,基于RX与 await等新技术
+
+
+
+    </description>
+    <summary>
+      https://github.com/waynebaby/MVVM-Sidekick/
+
+      The aim of this project: Using new techs offered by .Net 4.5 and Windows Runtime, design a suitable foundation for new tech environment, based on a cool ViewModelBase and ReactiveCommand.
+
+      目的是集合Reactive Command, Prism 等框架的优点，应对.Net 4.5 和 Windows Runtime带来的变化，为新技术环境量身打造一套以ViewModelBase/ReactiveCommand为核心的基础。
+
+
+
+      [微博] [twitter] [Mail]
+      [微博]: http://www.weibo.com/waynebabywang "WaynebabyWang"
+      [twitter]: http://twitter.com/waynebaby "Waynebaby"
+      [Mail]: mailto:blackshaman_wayne@hotmail.com "MSN Skype"
+
+    </summary>
+    <releaseNotes>
+      -----
+
+
+      1.3.0.3
+      Fix an exception happend with Rx 2.2.5 running on Windows phone 8.1 dev preview
+
+      1.3.0.1
+      Fix Ser/Deser Bug with bindable base.
+
+      1.2.3.2
+      Fix Lost [DataContract]  attribute on disposing Group
+
+      1.2.3.1
+      Change default value of ViewModelBase(of TVM).IsDisposingWhenUnloadRequired, it should be false in most cases.
+
+      1.2.3.0
+      fixed bug: await vm.StageManager.Show()  cannot complete in WPF MVVMWindow
+
+      1.2.2.8
+      fixed bug: await vm.StageManager.Show()  cannot complete in MVVMPage
+
+      1.2.2.6
+      Fixed a .ListenToIsUIBusy() Command Canexecute Refresh bug.
+
+      1.2.2.5
+      Add a new exption throw point, that reports "You havn't mapped a VM to a View cause null reference" kinda bug.
+      Add core lib code into nupkg. you can find MVVMSidekick.zip in src folder. Happy debugging!
+
+      1.2.2.4
+      Fixed "ListenToUIBusy"  method logic.
+
+      1.2.2.3
+      Bug fix: Fixed ExecuteTask cannot await deadlock.
+      Added a lazy load EventRouter to each BindableBase to support Event Routing behaviors.
+
+    </releaseNotes>
+    <tags>Rx Reactive Extensions MVVM Win8 Metro Modern UI</tags>
+    <dependencies>
+
+      <dependency id="Rx-Main" version="[2.2.5,2.2.5]" />
+      <dependency id="Rx-PlatformServices" version="[2.2.5,2.2.5]" />
+      <dependency id="Rx-Interfaces" version="[2.2.5,2.2.5]" />
+      <dependency id="Rx-Core" version="[2.2.5,2.2.5]" />
+      <dependency id="Rx-Linq" version="[2.2.5,2.2.5]" />
+      <dependency id="Rx-Xaml" version="[2.2.5,2.2.5]" />
+      
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\" target="tools" />
+    <file src="content\" target="content" />
+    <file src="src\" target="src" />
+    <file src="lib\" target="lib" />  
+  </files>
+</package>
