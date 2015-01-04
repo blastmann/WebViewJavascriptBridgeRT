@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Windows.Data.Json;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 using WebViewJavascriptBridgeRT;
@@ -22,7 +23,7 @@ namespace ExampleProject
 				callback(@"Response for message from C#");
 			});
 
-			_bridge.RegisterHandlder(@"testCSharpCallback", delegate(string data, WVJBResponseCallback callback)
+			_bridge.RegisterHandlder(@"testCSharpCallback", (data, callback) =>
 			{
 				_outputResults.Insert(0, @"Receive message from JS: " + data);
 				callback(@"Response from testCSharpCallback");
@@ -45,8 +46,12 @@ namespace ExampleProject
 
 		private void CallHandler(object sender, RoutedEventArgs e)
 		{
-			string data = @"{ 'greetingFromC#': 'Hi there, JS!' }";
-			_bridge.CallHandler(@"testJavascriptHandler", data, s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));
+			var json = new
+			{
+				greetingFromCSharp = "Hi there, JS!"
+			};
+			_bridge.CallHandler(@"testJavascriptHandler", json,
+				s => _outputResults.Insert(0, @"testJavascriptHandler responded: " + s));
 		}
 	}
 }
