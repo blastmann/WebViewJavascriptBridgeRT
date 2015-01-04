@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<metadata>
+<id>WebViewJavascriptBridgeRT</id>
+<version>1.0.2</version>
+<title>WebViewJavascriptBridgeRT</title>
+<authors>blastmann</authors>
+<owners>blastmann</owners>
+<licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
+<projectUrl>https://github.com/blastmann/WebViewJavascriptBridgeRT</projectUrl>
+<requireLicenseAcceptance>false</requireLicenseAcceptance>
+<description>
+WebViewJavascriptBridgeRT https://github.com/blastmann/WebViewJavascriptBridgeRT
+================
+
+A bridge for sending messages between native codes and js codes.
+
+WinRT下桥接WebView，自如地让C#和JS相互调用
+
+</description>
+<releaseNotes>
+-----
+
+1.0.2
+1.0.1
+Fix publish problems.
+
+1.0.0
+Public test.
+
+</releaseNotes>
+<tags>WebView WinRT</tags>
+<dependencies>
+<dependency id="Newtonsoft.Json" version="[6.0.7,6.0.7]" />
+</dependencies>
+</metadata>
+<files>
+<file src="lib\WebViewJavascriptBridgeRT.*" target="lib" />
+<file src="lib\*.js" target="lib\WebViewJavascriptBridgeRT" />
+<file src="lib\*.html" target="lib\WebViewJavascriptBridgeRT" />
+</files>
+</package>
