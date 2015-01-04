@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 <metadata>
 <id>WebViewJavascriptBridgeRT</id>
-<version>1.0.0</version>
+<version>1.0.2</version>
 <title>WebViewJavascriptBridgeRT</title>
 <authors>blastmann</authors>
 <owners>blastmann</owners>
@@ -21,8 +21,12 @@ WinRT下桥接WebView，自如地让C#和JS相互调用
 <releaseNotes>
 -----
 
-1.0.0.0
-Public Test.
+1.0.2
+1.0.1
+Fix publish problems.
+
+1.0.0
+Public test.
 
 </releaseNotes>
 <tags>WebView WinRT</tags>
@@ -30,5 +34,9 @@ Public Test.
 <dependency id="Newtonsoft.Json" version="[6.0.7,6.0.7]" />
 </dependencies>
 </metadata>
-<files />
+<files>
+<file src="lib\WebViewJavascriptBridgeRT.*" target="lib" />
+<file src="lib\*.js" target="lib\WebViewJavascriptBridgeRT" />
+<file src="lib\*.html" target="lib\WebViewJavascriptBridgeRT" />
+</files>
 </package>
