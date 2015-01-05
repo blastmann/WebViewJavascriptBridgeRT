@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 <metadata>
 <id>WebViewJavascriptBridgeRT</id>
-<version>1.0.2</version>
+<version>1.0.3</version>
 <title>WebViewJavascriptBridgeRT</title>
 <authors>blastmann</authors>
 <owners>blastmann</owners>
@@ -20,6 +20,9 @@ WinRT下桥接WebView，自如地让C#和JS相互调用
 </description>
 <releaseNotes>
 -----
+
+1.0.3
+Update script notify process.
 
 1.0.2
 1.0.1

@@ -2,7 +2,7 @@
 
 :: Set repository info
 set key=77390135-ecaf-47e7-9f15-ae2b38102747
-set url=https://github.com/blastmann/WebViewJavascriptBridgeRT
+set url=https://www.nuget.org/packages/WebViewJavascriptBridgeRT/
 
 :: Make sure the nuget executable is writable
 attrib -R NuGet.exe
