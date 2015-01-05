@@ -47,7 +47,12 @@
 			message['callbackId'] = callbackId;
 		}
 		sendMessageQueue.push(message);
-		messagingIframe.contentWindow.postMessage(CUSTOM_PROTOCOL_SCHEME + '://' + QUEUE_HAS_MESSAGE, "*");
+		var notifyMessage = CUSTOM_PROTOCOL_SCHEME + '://' + QUEUE_HAS_MESSAGE;
+		if (messagingIframe) {
+			messagingIframe.contentWindow.postMessage(notifyMessage, "*");
+		} else {
+			window.external.notify(notifyMessage);
+		}
 	}
 
 	function _fetchQueue() {
@@ -107,7 +112,9 @@
 		_handleMessageFromNative: _handleMessageFromNative
 	};
 	var doc = document;
-	_createQueueReadyIframe(doc);
+	if (location.href.indexOf("ms-appx") >= 0) {
+		_createQueueReadyIframe(doc);
+	}
 	var readyEvent = doc.createEvent('Events');
 	readyEvent.initEvent('WebViewJavascriptBridgeReady', true, false);
 	readyEvent.bridge = WebViewJavascriptBridge;
