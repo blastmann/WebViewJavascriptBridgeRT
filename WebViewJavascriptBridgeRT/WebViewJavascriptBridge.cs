@@ -105,7 +105,7 @@ namespace WebViewJavascriptBridgeRT
 		/// </summary>
 		/// <param name="handlerName"></param>
 		/// <param name="handler"></param>
-		public void RegisterHandlder(string handlerName, WVJBHandler handler)
+		public void RegisterHandler(string handlerName, WVJBHandler handler)
 		{
 			_messageHandlers[handlerName] = handler;
 		}

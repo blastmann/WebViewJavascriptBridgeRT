@@ -23,7 +23,7 @@ namespace ExampleProject
 				callback(@"Response for message from C#");
 			});
 
-			_bridge.RegisterHandlder(@"testCSharpCallback", (data, callback) =>
+			_bridge.RegisterHandler(@"testCSharpCallback", (data, callback) =>
 			{
 				_outputResults.Insert(0, @"Receive message from JS: " + data);
 				callback(@"Response from testCSharpCallback");

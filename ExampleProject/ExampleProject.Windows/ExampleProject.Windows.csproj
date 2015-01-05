@@ -113,7 +113,6 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="ExampleProject.Windows_TemporaryKey.pfx" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.scale-100.png" />
@@ -128,12 +127,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\netcore45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="WebViewJavascriptBridgeRT">
-      <HintPath>..\..\packages\WebViewJavascriptBridgeRT.1.0.3\lib\WebViewJavascriptBridgeRT.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\WebViewJavascriptBridgeRT\WebViewJavascriptBridgeRT.csproj">
+      <Project>{1dfbef87-682f-4f3d-b8ba-a72ed0feb84b}</Project>
+      <Name>WebViewJavascriptBridgeRT</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
